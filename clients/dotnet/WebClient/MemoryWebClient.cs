@@ -262,7 +262,6 @@ public class MemoryWebClient : IKernelMemory
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        // TODO: Get the filename, contentType, date, volume, relativePath from the headers to recreate the IContentFile
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpDownloadEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
@@ -276,11 +275,12 @@ public class MemoryWebClient : IKernelMemory
         ContentDispositionHeaderValue disposition = ContentDispositionHeaderValue.Parse(contentDisposition.FirstOrDefault());
         string responseFileName = disposition.FileName;
 
+        string lastModified2 = lastModified.FirstOrDefault();
         StreamableContentFile result = new(
             volume.FirstOrDefault(),
             relPath.FirstOrDefault(),
             responseFileName,
-            new DateTime(long.Parse(lastModified.FirstOrDefault())),
+            DateTimeOffset.Parse(lastModified2),
             response.Content.ReadAsStreamAsync,
             disposition.Size.Value,
             contentType.FirstOrDefault()

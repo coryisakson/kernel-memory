@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using DocumentFormat.OpenXml.EMMA;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;

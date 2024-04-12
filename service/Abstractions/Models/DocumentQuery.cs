@@ -11,11 +11,11 @@ public class DocumentQuery
     public string? Index { get; set; } = string.Empty;
 
     [JsonPropertyName("documentId")]
-    [JsonPropertyOrder(0)]
+    [JsonPropertyOrder(1)]
     public string? DocumentId { get; set; } = string.Empty;
 
     [JsonPropertyName("fileName")]
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public string FileName { get; set; } = string.Empty;
 
     [JsonPropertyName("filters")]

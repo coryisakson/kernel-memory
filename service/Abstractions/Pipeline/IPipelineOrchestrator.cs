@@ -113,6 +113,7 @@ public interface IPipelineOrchestrator
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
     /// <param name="fileContent">File content</param>
+    /// <param name="contentType">Mime type of the file</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, string contentType = "text/plain", CancellationToken cancellationToken = default);
 
@@ -122,8 +123,9 @@ public interface IPipelineOrchestrator
     /// <param name="pipeline">Pipeline containing the file</param>
     /// <param name="fileName">Name of the file to fetch</param>
     /// <param name="fileContent">File content</param>
+    /// <param name="contentType">Mime type of the file</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
-    Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, string contentType= "application/octet-stream", CancellationToken cancellationToken = default);
+    Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, string contentType = "application/octet-stream", CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Whether the pipeline generates and saves the vectors/embeddings in the memory DBs.
