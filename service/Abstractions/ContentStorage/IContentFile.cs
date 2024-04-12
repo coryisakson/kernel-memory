@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.KernelMemory.ContentStorage;
 public interface IContentFile
@@ -11,25 +12,30 @@ public interface IContentFile
     string? FileName { get; }
     string? ContentType { get; }
     DateTimeOffset? LastWrite { get; }
-    Stream Stream { get; }
+    Func<Task<Stream>> StreamAsync { get; }
     long Length { get; }
 }
 
 public sealed class StreamableContentFile : IContentFile, IDisposable
 {
+    private Stream? _stream;
     public StreamableContentFile()
     {
-        this.Stream = new MemoryStream();
+        this.StreamAsync = () => Task.FromResult<Stream>(new MemoryStream());
     }
-    public StreamableContentFile(string volume, string relPath, string fileName, DateTime lastWriteTimeUtc, Stream stream, string contentType = "application/octet-stream")
+    public StreamableContentFile(string volume, string relPath, string fileName, DateTimeOffset lastWriteTimeUtc, Func<Task<Stream>> asyncStreamDelegate, long contentLength, string contentType = "application/octet-stream")
     {
         this.Volume = volume;
         this.RelativePath = relPath;
         this.FileName = fileName;
         this.ContentType = contentType;
         this.LastWrite = lastWriteTimeUtc;
-        this.Stream = stream;
-        this.Length = stream.Length;
+        this.StreamAsync = async () =>
+        {
+            this._stream = await asyncStreamDelegate().ConfigureAwait(false);
+            return this._stream;
+        };
+        this.Length = contentLength;
     }
 
     public string? Volume { get; } = null;
@@ -37,15 +43,15 @@ public sealed class StreamableContentFile : IContentFile, IDisposable
     public string? FileName { get; } = null;
     public string? ContentType { get; } = null;
     public DateTimeOffset? LastWrite { get; } = null;
-    public Stream Stream { get; }
+    public Func<Task<Stream>> StreamAsync { get; }
     public long Length { get; } = 0;
 
     public void Dispose()
     {
-        if (this.Stream != null)
+        if (this._stream != null)
         {
-            this.Stream.Close();
-            this.Stream.Dispose();
+            this._stream.Close();
+            this._stream.Dispose();
         }
     }
 }

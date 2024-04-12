@@ -157,7 +157,7 @@ public class TextPartitioningHandler : IPipelineStepHandler
                     this._log.LogDebug("Partition size: {0} tokens", tokenCount);
 
                     var destFile = uploadedFile.GetPartitionFileName(partitionNumber);
-                    await this._orchestrator.WriteFileAsync(pipeline, destFile, textData, cancellationToken).ConfigureAwait(false);
+                    await this._orchestrator.WriteFileAsync(pipeline, destFile, textData, "text/plain", cancellationToken).ConfigureAwait(false);
 
                     var destFileDetails = new DataPipeline.GeneratedFileDetails
                     {

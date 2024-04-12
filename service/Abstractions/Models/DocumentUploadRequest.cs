@@ -24,13 +24,20 @@ public class DocumentUploadRequest
         /// </summary>
         public Stream FileContent { get; set; } = Stream.Null;
 
+        /// <summary>
+        /// File content type
+        /// </summary>
+        public string? ContentType { get; set; }
+
         public UploadedFile()
         {
         }
 
         public UploadedFile(string fileName, Stream fileContent)
         {
+            // TODO: capture the content type when adding files to document
             this.FileName = fileName;
+            this.ContentType = "application/octet-stream";
             this.FileContent = fileContent;
         }
     }

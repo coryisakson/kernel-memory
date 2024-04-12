@@ -228,17 +228,17 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, CancellationToken cancellationToken = default)
+    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, string contentType = "text/plain", CancellationToken cancellationToken = default)
     {
         pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
-        return this.WriteFileAsync(pipeline, fileName, new BinaryData(fileContent), cancellationToken);
+        return this.WriteFileAsync(pipeline, fileName, new BinaryData(fileContent), contentType, cancellationToken);
     }
 
     ///<inheritdoc />
-    public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, CancellationToken cancellationToken = default)
+    public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, string contentType = "application/octet-stream", CancellationToken cancellationToken = default)
     {
         pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
-        return this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, fileName, fileContent.ToStream(), cancellationToken);
+        return this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, fileName, fileContent.ToStream(), contentType, cancellationToken);
     }
 
     ///<inheritdoc />
@@ -410,6 +410,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                     pipeline.DocumentId,
                     Constants.PipelineStatusFilename,
                     new BinaryData(ToJson(pipeline, true)).ToStream(),
+                    "application/json",
                     cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -444,7 +445,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
             var fileSize = file.FileContent.Length;
 
             this.Log.LogDebug("Uploading file '{0}', size {1} bytes", file.FileName, fileSize);
-            await this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, file.FileName, file.FileContent, cancellationToken).ConfigureAwait(false);
+            await this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, file.FileName, file.FileContent, file.ContentType, cancellationToken).ConfigureAwait(false);
 
             string mimeType = string.Empty;
             try

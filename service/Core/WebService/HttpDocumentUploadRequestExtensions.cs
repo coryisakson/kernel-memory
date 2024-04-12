@@ -16,7 +16,7 @@ public static class HttpDocumentUploadRequestExtensions
             Index = request.Index,
             DocumentId = request.DocumentId,
             Tags = request.Tags,
-            Steps = request.Steps,
+            Steps = request.Steps
         };
 
         foreach (IFormFile file in request.Files)
@@ -24,7 +24,8 @@ public static class HttpDocumentUploadRequestExtensions
             result.Files.Add(new DocumentUploadRequest.UploadedFile
             {
                 FileName = file.FileName,
-                FileContent = file.OpenReadStream()
+                FileContent = file.OpenReadStream(),
+                ContentType = file.ContentType
             });
         }
 

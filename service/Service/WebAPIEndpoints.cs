@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.WebService;
 
@@ -298,7 +299,7 @@ internal static class WebAPIEndpoints
 
     public static void UseGetDownloadEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
     {
-        // File upload endpoint
+        // File download endpoint
         var route = app.MapPost(Constants.HttpDownloadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 DocumentQuery query,
@@ -332,18 +333,17 @@ internal static class WebAPIEndpoints
 
                 log.LogTrace("Doc Id '{1}'", query.DocumentId);
 
-// TODO: Add strings to Contstants
-                request.HttpContext.Response.Headers.Add("x-km-file-documentId", query.DocumentId);
-                request.HttpContext.Response.Headers.Add("x-km-file-volume", response.Volume);
-
-                return Results.File(response.Stream, response.ContentType, response.FileName, response.LastWrite);
+                request.HttpContext.Response.Headers.Add(Constants.FileHeaderDocumentId, query.DocumentId);
+                request.HttpContext.Response.Headers.Add(Constants.FileHeaderVolume, response.Volume);
+                request.HttpContext.Response.Headers.Add(Constants.FileHeaderRelativePath, response.RelativePath);
+                return Results.File(await response.StreamAsync(), response.ContentType, query.FileName, response.LastWrite);
             }
             catch (Exception e)
             {
                 return Results.Problem(title: "Document download failed", detail: e.Message, statusCode: 503);
             }
         })
-            .Produces<UploadAccepted>(StatusCodes.Status200OK)
+            .Produces<IContentFile>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)

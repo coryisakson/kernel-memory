@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -264,16 +266,25 @@ public class MemoryWebClient : IKernelMemory
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpDownloadEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        response.Headers.TryGetValues("filename", out IEnumerable<string> responseFileName);
-        response.Headers.TryGetValues("contentType", out IEnumerable<string> contentType);
-        response.Headers.TryGetValues("lastWrite", out IEnumerable<string> lastWrite);
-        response.Headers.TryGetValues("x-km-file-documentId", out IEnumerable<string> documentIds);
-        response.Headers.TryGetValues("x-km-file-documentId", out IEnumerable<string> relPath);
-        response.Headers.TryGetValues("x-km-file-volume", out IEnumerable<string> volume);
+        response.Headers.TryGetValues("content-disposition", out IEnumerable<string> contentDisposition);
+        response.Headers.TryGetValues("content-type", out IEnumerable<string> contentType);
+        response.Headers.TryGetValues("last-modified", out IEnumerable<string> lastModified);
+        response.Headers.TryGetValues(Constants.FileHeaderDocumentId, out IEnumerable<string> documentIds);
+        response.Headers.TryGetValues(Constants.FileHeaderRelativePath, out IEnumerable<string> relPath);
+        response.Headers.TryGetValues(Constants.FileHeaderVolume, out IEnumerable<string> volume);
 
-        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-        StreamableContentFile result = new(volume.FirstOrDefault(), relPath.FirstOrDefault(), responseFileName.FirstOrDefault(),
-            new DateTime(long.Parse(lastWrite.FirstOrDefault())), stream, contentType.FirstOrDefault());
+        ContentDispositionHeaderValue disposition = ContentDispositionHeaderValue.Parse(contentDisposition.FirstOrDefault());
+        string responseFileName = disposition.FileName;
+
+        StreamableContentFile result = new(
+            volume.FirstOrDefault(),
+            relPath.FirstOrDefault(),
+            responseFileName,
+            new DateTime(long.Parse(lastModified.FirstOrDefault())),
+            response.Content.ReadAsStreamAsync,
+            disposition.Size.Value,
+            contentType.FirstOrDefault()
+           );
 
         return result;
     }

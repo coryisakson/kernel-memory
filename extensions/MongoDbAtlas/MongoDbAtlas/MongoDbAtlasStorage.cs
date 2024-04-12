@@ -59,7 +59,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         return this.EmptyDocumentDirectoryAsync(index, documentId, cancellationToken);
     }
 
-    public async Task WriteFileAsync(string index, string documentId, string fileName, Stream streamContent,
+    public async Task WriteFileAsync(string index, string documentId, string fileName, Stream streamContent, string contentType = "application/octet-stream",
         CancellationToken cancellationToken = new CancellationToken())
     {
         // txt files are extracted text, and are stored in mongodb in the collection
@@ -74,6 +74,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 { "_id", id },
                 { "documentId", documentId },
                 { "fileName", fileName },
+                { "contentType", "text/plain" },
                 { "content", new BsonString(await reader.ReadToEndAsync().ConfigureAwait(false)) }
             };
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
@@ -89,6 +90,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
             doc["_id"] = id;
             doc["documentId"] = documentId;
             doc["fileName"] = fileName;
+            doc["contentType"] = "application/json";
             doc["content"] = content;
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }
@@ -101,7 +103,8 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 {
                     { "index", index },
                     { "documentId", documentId },
-                    { "fileName", fileName }
+                    { "fileName", fileName },
+                    { "contentType", contentType }
                 }
             };
 
@@ -127,6 +130,12 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
     public async Task<BinaryData> ReadFileAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true,
         CancellationToken cancellationToken = new CancellationToken())
     {
+        IContentFile result = (await this.FileInfoAsync(index, documentId, fileName, logErrIfNotFound, cancellationToken).ConfigureAwait(false));
+        return new BinaryData(result.StreamAsync());
+    }
+
+    public async Task<IContentFile> FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
+    {
         // Read from mongodb but you need to check extension to load correctly
         var extension = Path.GetExtension(fileName);
         var id = $"{documentId}/{fileName}";
@@ -146,7 +155,17 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 throw new ContentStorageFileNotFoundException(error);
             }
 
-            return new BinaryData(doc["content"].AsString);
+            BinaryData docData = new(doc["content"].AsString);
+            Task<Stream> asyncStreamDelegate() => Task.FromResult(docData.ToStream());
+            StreamableContentFile file = new(
+                collection.Database.DatabaseNamespace.DatabaseName,
+                id,
+                fileName,
+                DateTimeOffset.UtcNow,
+                asyncStreamDelegate,
+                docData.Length,
+                doc["contentType"].AsString);
+            return file;
         }
         else if (extension == ".text_embedding")
         {
@@ -163,7 +182,17 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 throw new ContentStorageFileNotFoundException("File not found");
             }
 
-            return new BinaryData(doc["content"].AsString);
+            BinaryData docData = new(doc["content"].AsString);
+            Task<Stream> asyncStreamDelegate() => Task.FromResult(docData.ToStream());
+            StreamableContentFile file = new(
+                collection.Database.DatabaseNamespace.DatabaseName,
+                id,
+                fileName,
+                DateTimeOffset.UtcNow,
+                asyncStreamDelegate,
+                docData.Length,
+                doc["contentType"].AsString);
+            return file;
         }
         else
         {
@@ -182,17 +211,18 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 throw new ContentStorageFileNotFoundException("File not found");
             }
 
-            using var stream = await bucket.OpenDownloadStreamAsync(file.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
-            memoryStream.Position = 0;
-            return new BinaryData(memoryStream.ToArray());
-        }
-    }
+            async Task<Stream> asyncStreamDelegate() => await bucket.OpenDownloadStreamAsync(file.Id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    public Task<IContentFile> FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
+            StreamableContentFile streamableFile = new(
+                bucket.Database.DatabaseNamespace.DatabaseName,
+                id,
+                file.Filename,
+                file.UploadDateTime,
+                asyncStreamDelegate,
+                file.Length,
+                file.Metadata["contentType"].AsString);
+            return streamableFile;
+        }
     }
 
     private async Task SaveDocumentAsync(string index, string id, BsonDocument doc, CancellationToken cancellationToken)

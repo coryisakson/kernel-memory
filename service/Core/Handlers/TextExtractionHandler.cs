@@ -88,7 +88,7 @@ public class TextExtractionHandler : IPipelineStepHandler
             {
                 // Text file
                 this._log.LogDebug("Saving extracted text file {0}", destFile);
-                await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), cancellationToken).ConfigureAwait(false);
+                await this._orchestrator.WriteFileAsync(pipeline, destFile, new BinaryData(text), "text/plain", cancellationToken).ConfigureAwait(false);
                 var destFileDetails = new DataPipeline.GeneratedFileDetails
                 {
                     Id = Guid.NewGuid().ToString("N"),
@@ -104,7 +104,7 @@ public class TextExtractionHandler : IPipelineStepHandler
 
                 // Structured content (pages)
                 this._log.LogDebug("Saving extracted content {0}", destFile2);
-                await this._orchestrator.WriteFileAsync(pipeline, destFile2, new BinaryData(content), cancellationToken).ConfigureAwait(false);
+                await this._orchestrator.WriteFileAsync(pipeline, destFile2, new BinaryData(content), "application/json", cancellationToken).ConfigureAwait(false);
                 var destFile2Details = new DataPipeline.GeneratedFileDetails
                 {
                     Id = Guid.NewGuid().ToString("N"),

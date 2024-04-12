@@ -85,6 +85,7 @@ public class SimpleFileStorage : IContentStorage
         string documentId,
         string fileName,
         Stream streamContent,
+        string? contentType = default,
         CancellationToken cancellationToken = default)
     {
         await this._fileSystem.CreateDirectoryAsync(volume: index, relPath: documentId, cancellationToken).ConfigureAwait(false);

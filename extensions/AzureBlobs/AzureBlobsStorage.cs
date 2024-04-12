@@ -183,10 +183,12 @@ public class AzureBlobsStorage : IContentStorage
         string documentId,
         string fileName,
         Stream streamContent,
+        string? contentType = "application/octet-stream",
         CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);
-        return this.InternalWriteAsync(directoryName, fileName, streamContent, cancellationToken);
+
+        return this.InternalWriteAsync(directoryName, fileName, streamContent, contentType, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -221,9 +223,42 @@ public class AzureBlobsStorage : IContentStorage
         }
     }
 
-    public Task<IContentFile> FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
+    public async Task<IContentFile> FileInfoAsync(
+        string index,
+        string documentId,
+        string fileName,
+        bool logErrIfNotFound = true,
+        CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var directoryName = JoinPaths(index, documentId);
+        var blobName = $"{directoryName}/{fileName}";
+        BlobClient blobClient = this.GetBlobClient(blobName);
+
+        try
+        {
+            bool exists = await blobClient.ExistsAsync(cancellationToken).ConfigureAwait(false);
+            if (exists)
+            {
+                var properties = (await blobClient.GetPropertiesAsync(null, cancellationToken).ConfigureAwait(false)).Value;
+                return new StreamableContentFile(
+                    this._containerName,
+                    directoryName,
+                    blobClient.Name,
+                    properties.LastModified,
+                    async () => (await blobClient.DownloadStreamingAsync(null, cancellationToken).ConfigureAwait(false)).Value.Content,
+                    properties.ContentLength,
+                    properties.ContentType);
+            }
+
+            if (logErrIfNotFound) { this._log.LogError("Unable to download file {0}", blobName); }
+
+            throw new ContentStorageFileNotFoundException("Unable to fetch blob content");
+        }
+        catch (RequestFailedException e) when (e.Status == 404)
+        {
+            this._log.LogInformation("File not found: {0}", blobName);
+            throw new ContentStorageFileNotFoundException("File not found", e);
+        }
     }
 
     #region private
@@ -239,7 +274,7 @@ public class AzureBlobsStorage : IContentStorage
         return $"{index}/{documentId}";
     }
 
-    private async Task InternalWriteAsync(string directoryName, string fileName, object content, CancellationToken cancellationToken)
+    private async Task InternalWriteAsync(string directoryName, string fileName, object content, string? contentType, CancellationToken cancellationToken)
     {
         var blobName = $"{directoryName}/{fileName}";
 
@@ -252,7 +287,12 @@ public class AzureBlobsStorage : IContentStorage
         {
             blobLeaseClient = this.GetBlobLeaseClient(blobClient);
             lease = await this.LeaseBlobAsync(blobLeaseClient, cancellationToken).ConfigureAwait(false);
-            options = new BlobUploadOptions { Conditions = new BlobRequestConditions { LeaseId = lease.LeaseId } };
+            options = new BlobUploadOptions {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = contentType
+                },
+                Conditions = new BlobRequestConditions { LeaseId = lease.LeaseId } };
         }
 
         this._log.LogTrace("Writing blob {0} ...", blobName);
@@ -408,11 +448,6 @@ public class AzureBlobsStorage : IContentStorage
         }
 
         return value;
-    }
-
-    Task<IContentFile> IContentStorage.FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound, CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
     }
 
     #endregion

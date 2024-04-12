@@ -146,7 +146,7 @@ public class GenerateEmbeddingsHandler : IPipelineStepHandler
 
                             this._log.LogDebug("Saving embedding file {0}", embeddingFileName);
                             string text = JsonSerializer.Serialize(embeddingData);
-                            await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteTextFileAsync(pipeline, embeddingFileName, text, "text/plain", cancellationToken).ConfigureAwait(false);
 
                             var embeddingFileNameDetails = new DataPipeline.GeneratedFileDetails
                             {

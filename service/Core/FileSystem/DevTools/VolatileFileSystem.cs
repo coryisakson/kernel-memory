@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using DocumentFormat.OpenXml.EMMA;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
@@ -234,7 +235,8 @@ internal sealed class VolatileFileSystem : IFileSystem
                 this._log.LogError("File not found: {0}", filePath);
                 throw new FileNotFoundException($"File not found: {filePath}");
             }
-            result = new(volume, relPath, fileName, DateTime.UtcNow, file.ToStream());
+            Task<Stream> asyncStreamDelegate() => Task.FromResult<Stream>(file.ToStream());
+            result = new(volume, relPath, fileName, DateTime.UtcNow, asyncStreamDelegate, file.Length);
         }
         else
         {

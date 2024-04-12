@@ -96,4 +96,9 @@ public static class Constants
     // Standard prompt names
     public const string PromptNamesSummarize = "summarize";
     public const string PromptNamesAnswerWithFacts = "answer-with-facts";
+
+    // File Download Header
+    public const string FileHeaderDocumentId = "x-km-file-documentId";
+    public const string FileHeaderRelativePath = "x-km-file-relPath";
+    public const string FileHeaderVolume = "x-km-file-volume";
 }

@@ -91,7 +91,7 @@ public class SummarizationHandler : IPipelineStepHandler
                         {
                             var summaryData = new BinaryData(summary);
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, cancellationToken).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, "text/plain", cancellationToken).ConfigureAwait(false);
 
                             summaryFiles.Add(destFile, new DataPipeline.GeneratedFileDetails
                             {

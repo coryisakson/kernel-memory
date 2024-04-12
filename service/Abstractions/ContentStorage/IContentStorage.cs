@@ -66,6 +66,7 @@ public interface IContentStorage
     /// <param name="index">Index name</param>
     /// <param name="documentId">Document ID</param>
     /// <param name="fileName">Name of the file</param>
+    /// <param name="contentType">Mime type of the file</param>
     /// <param name="streamContent">File content</param>
     /// <param name="cancellationToken">Async task cancellation token</param>
     Task WriteFileAsync(
@@ -73,6 +74,7 @@ public interface IContentStorage
         string documentId,
         string fileName,
         Stream streamContent,
+        string contentType = "application/octet-stream",
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -103,7 +105,7 @@ public interface IContentStorage
     Task<IContentFile> FileInfoAsync(
         string index,
         string documentId,
-        string fileName, 
+        string fileName,
         bool logErrIfNotFound = true,
         CancellationToken cancellationToken = default);
 }

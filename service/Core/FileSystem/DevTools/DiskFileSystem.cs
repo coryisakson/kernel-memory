@@ -201,7 +201,8 @@ internal sealed class DiskFileSystem : IFileSystem
 
         this._log.LogTrace("File exists, reading {0}", path);
         FileInfo info = new(path);
-        StreamableContentFile result = new(volume, relPath, fileName, info.LastWriteTimeUtc, info.OpenRead());
+        Task<Stream> asyncStreamDelegate() => Task.FromResult<Stream>(info.OpenRead());
+        StreamableContentFile result = new(volume, relPath, fileName, info.LastWriteTimeUtc, asyncStreamDelegate, info.Length);
 
         this._log.LogTrace("File {0} size: {1} bytes", path, info.Length);
         return Task.FromResult<IContentFile>(result);
