@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.ContentStorage;
 
 namespace Microsoft.KernelMemory.FileSystem.DevTools;
 
@@ -34,6 +35,7 @@ internal interface IFileSystem
     Task<bool> FileExistsAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default);
 
     Task<BinaryData> ReadFileAsBinaryAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default);
+    Task<IContentFile> ReadFileInfoAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default);
     Task<string> ReadFileAsTextAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default);
     Task<IDictionary<string, string>> ReadAllFilesAsTextAsync(string volume, string relPath, CancellationToken cancellationToken = default);
     Task<IEnumerable<string>> GetAllFileNamesAsync(string volume, string relPath, CancellationToken cancellationToken = default);

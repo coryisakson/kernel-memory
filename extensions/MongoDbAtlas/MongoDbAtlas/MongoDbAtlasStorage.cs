@@ -190,6 +190,11 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         }
     }
 
+    public Task<IContentFile> FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task SaveDocumentAsync(string index, string id, BsonDocument doc, CancellationToken cancellationToken)
     {
         var collection = this.GetCollection(index);

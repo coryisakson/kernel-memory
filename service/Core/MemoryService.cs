@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.Pipeline;
@@ -20,15 +21,18 @@ public class MemoryService : IKernelMemory
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ISearchClient _searchClient;
+    private readonly IContentStorage _contentStorage;
     private readonly string? _defaultIndexName;
 
     public MemoryService(
         IPipelineOrchestrator orchestrator,
         ISearchClient searchClient,
+        IContentStorage contentStorage,
         KernelMemoryConfig? config = null)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
+        this._contentStorage = contentStorage ?? throw new ConfigurationException("The storage is NULL");
 
         // A non-null config object is required in order to get a non-empty default index name
         config ??= new KernelMemoryConfig();
@@ -218,6 +222,31 @@ public class MemoryService : IKernelMemory
             question: question,
             filters: filters,
             minRelevance: minRelevance,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<IContentFile> ExportDocumentAsync(
+        string fileName,
+        string documentId,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        index = IndexName.CleanName(index, this._defaultIndexName);
+        return this._contentStorage.FileInfoAsync(
+            index: index,
+            documentId: documentId,
+            fileName: fileName,
+            logErrIfNotFound: true,
             cancellationToken: cancellationToken);
     }
 }

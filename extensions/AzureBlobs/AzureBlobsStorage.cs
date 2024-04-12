@@ -221,6 +221,11 @@ public class AzureBlobsStorage : IContentStorage
         }
     }
 
+    public Task<IContentFile> FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
     #region private
 
     /// <summary>
@@ -403,6 +408,11 @@ public class AzureBlobsStorage : IContentStorage
         }
 
         return value;
+    }
+
+    Task<IContentFile> IContentStorage.FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     #endregion

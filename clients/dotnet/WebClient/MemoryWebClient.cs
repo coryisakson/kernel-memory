@@ -10,7 +10,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Internals;
+using Microsoft.KernelMemory.Models;
 
 namespace Microsoft.KernelMemory;
 
@@ -231,6 +233,49 @@ public class MemoryWebClient : IKernelMemory
         DataPipelineStatus? status = JsonSerializer.Deserialize<DataPipelineStatus>(json);
 
         return status;
+    }
+
+    /// <inheritdoc />
+    public async Task<IContentFile> ExportDocumentAsync(
+        string fileName,
+        string? documentId = null,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (filter != null)
+        {
+            if (filters == null) { filters = new List<MemoryFilter>(); }
+
+            filters.Add(filter);
+        }
+
+        DocumentQuery request = new()
+        {
+            Index = index,
+            FileName = fileName,
+            DocumentId = documentId,
+            Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
+        };
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+        // TODO: Get the filename, contentType, date, volume, relativePath from the headers to recreate the IContentFile
+        HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpDownloadEndpoint, content, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        response.Headers.TryGetValues("filename", out IEnumerable<string> responseFileName);
+        response.Headers.TryGetValues("contentType", out IEnumerable<string> contentType);
+        response.Headers.TryGetValues("lastWrite", out IEnumerable<string> lastWrite);
+        response.Headers.TryGetValues("x-km-file-documentId", out IEnumerable<string> documentIds);
+        response.Headers.TryGetValues("x-km-file-documentId", out IEnumerable<string> relPath);
+        response.Headers.TryGetValues("x-km-file-volume", out IEnumerable<string> volume);
+
+        var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+        StreamableContentFile result = new(volume.FirstOrDefault(), relPath.FirstOrDefault(), responseFileName.FirstOrDefault(),
+            new DateTime(long.Parse(lastWrite.FirstOrDefault())), stream, contentType.FirstOrDefault());
+
+        return result;
     }
 
     /// <inheritdoc />

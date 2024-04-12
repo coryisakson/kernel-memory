@@ -6,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.Models;
 using Microsoft.KernelMemory.WebService;
 
 namespace Microsoft.KernelMemory.Service;
@@ -33,6 +35,7 @@ internal static class WebAPIEndpoints
         app.UseAskEndpoint(authFilter);
         app.UseSearchEndpoint(authFilter);
         app.UseUploadStatusEndpoint(authFilter);
+        app.UseGetDownloadEndpoint(authFilter);
     }
 
     public static void UseGetStatusEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
@@ -289,6 +292,62 @@ internal static class WebAPIEndpoints
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status404NotFound);
+
+        if (authFilter != null) { route.AddEndpointFilter(authFilter); }
+    }
+
+    public static void UseGetDownloadEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    {
+        // File upload endpoint
+        var route = app.MapPost(Constants.HttpDownloadEndpoint, async Task<IResult> (
+                HttpRequest request,
+                DocumentQuery query,
+                IKernelMemory service,
+                ILogger<WebAPIEndpoint> log,
+                CancellationToken cancellationToken) =>
+        {
+            var isValid = !(
+                 string.IsNullOrWhiteSpace(query.DocumentId) ||
+                 string.IsNullOrWhiteSpace(query.FileName));
+            var errMsg = "Missing required parameter";
+
+            log.LogTrace("New download file HTTP request, index {0}, documentId {1}, fileName {3}", query.Index, query.DocumentId, query.FileName);
+
+            if (!isValid)
+            {
+                log.LogError(errMsg);
+                return Results.Problem(detail: errMsg, statusCode: 400);
+            }
+
+            try
+            {
+                // DownloadRequest => Document
+                var response = await service.ExportDocumentAsync(
+                            fileName: query.FileName,
+                            index: query.Index,
+                            documentId: query.DocumentId,
+                            filters: query.Filters,
+                            cancellationToken: cancellationToken)
+                    .ConfigureAwait(false);
+
+                log.LogTrace("Doc Id '{1}'", query.DocumentId);
+
+// TODO: Add strings to Contstants
+                request.HttpContext.Response.Headers.Add("x-km-file-documentId", query.DocumentId);
+                request.HttpContext.Response.Headers.Add("x-km-file-volume", response.Volume);
+
+                return Results.File(response.Stream, response.ContentType, response.FileName, response.LastWrite);
+            }
+            catch (Exception e)
+            {
+                return Results.Problem(title: "Document download failed", detail: e.Message, statusCode: 503);
+            }
+        })
+            .Produces<UploadAccepted>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
+            .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
+            .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);
 
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }

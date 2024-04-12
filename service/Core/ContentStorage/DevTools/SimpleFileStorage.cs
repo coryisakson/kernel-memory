@@ -113,4 +113,21 @@ public class SimpleFileStorage : IContentStorage
             throw new ContentStorageFileNotFoundException("File not found");
         }
     }
+
+    public async Task<IContentFile> FileInfoAsync(string index, string documentId, string fileName, bool logErrIfNotFound = true, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await this._fileSystem.ReadFileInfoAsync(volume: index, relPath: documentId, fileName: fileName, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception e) when (e is DirectoryNotFoundException || e is FileNotFoundException)
+        {
+            if (logErrIfNotFound)
+            {
+                this._log.LogError("File not found {0}/{1}/{2}", index, documentId, fileName);
+            }
+
+            throw new ContentStorageFileNotFoundException("File not found");
+        }
+    }
 }

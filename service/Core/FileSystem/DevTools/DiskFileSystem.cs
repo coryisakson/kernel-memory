@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.FileSystem.DevTools;
@@ -177,6 +178,33 @@ internal sealed class DiskFileSystem : IFileSystem
         byte[] content = await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false);
         this._log.LogTrace("File {0} size: {1} bytes", path, content.Length);
         return new BinaryData(content);
+    }
+
+    /// <inheritdoc />
+     public Task<IContentFile> ReadFileInfoAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
+    {
+        volume = ValidateVolumeName(volume);
+        relPath = ValidatePath(relPath);
+        var path = Path.Join(this._dataPath, volume, relPath);
+        if (!Directory.Exists(path))
+        {
+            throw new DirectoryNotFoundException($"Directory not found: {path}");
+        }
+
+        fileName = ValidateFileName(fileName);
+        path = Path.Join(path, fileName);
+        if (!File.Exists(path))
+        {
+            this._log.LogError("File not found: {0}", path);
+            throw new FileNotFoundException($"File not found: {path}");
+        }
+
+        this._log.LogTrace("File exists, reading {0}", path);
+        FileInfo info = new(path);
+        StreamableContentFile result = new(volume, relPath, fileName, info.LastWriteTimeUtc, info.OpenRead());
+
+        this._log.LogTrace("File {0} size: {1} bytes", path, info.Length);
+        return Task.FromResult<IContentFile>(result);
     }
 
     /// <inheritdoc />

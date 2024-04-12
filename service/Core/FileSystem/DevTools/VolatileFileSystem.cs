@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
 
 namespace Microsoft.KernelMemory.FileSystem.DevTools;
@@ -209,6 +210,38 @@ internal sealed class VolatileFileSystem : IFileSystem
         }
 
         return Task.FromResult(result);
+    }
+
+    public Task<IContentFile> ReadFileInfoAsync(string volume, string relPath, string fileName, CancellationToken cancellationToken = default)
+    {
+        volume = ValidateVolumeName(volume);
+        StreamableContentFile result = new();
+
+        if (this._volumes.TryGetValue(volume, out ConcurrentDictionary<string, BinaryData>? volumeData))
+        {
+            relPath = ValidatePath(relPath);
+            fileName = ValidateFileName(fileName);
+            var dirPath = JoinPaths(relPath, "");
+            var filePath = JoinPaths(relPath, fileName);
+            if (!volumeData.Keys.Any(x => x.StartsWith(dirPath, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new DirectoryNotFoundException($"Directory not found: {dirPath}");
+            }
+
+            BinaryData file = new(string.Empty);
+            if (!volumeData.TryGetValue(filePath, out file!))
+            {
+                this._log.LogError("File not found: {0}", filePath);
+                throw new FileNotFoundException($"File not found: {filePath}");
+            }
+            result = new(volume, relPath, fileName, DateTime.UtcNow, file.ToStream());
+        }
+        else
+        {
+            this.ThrowVolumeNotFound(volume);
+        }
+
+        return Task.FromResult<IContentFile>(result);
     }
 
     /// <inheritdoc />

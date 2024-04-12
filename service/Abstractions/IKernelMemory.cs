@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.ContentStorage;
 
 namespace Microsoft.KernelMemory;
 
@@ -196,5 +197,13 @@ public interface IKernelMemory
         MemoryFilter? filter = null,
         ICollection<MemoryFilter>? filters = null,
         double minRelevance = 0,
+        CancellationToken cancellationToken = default);
+
+    public Task<IContentFile> ExportDocumentAsync(
+        string fileName,
+        string documentId,
+        string? index = null,
+        MemoryFilter? filter = null,
+        ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default);
 }
