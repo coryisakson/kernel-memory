@@ -9,6 +9,7 @@
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);CS1591;CA1861;CA1051;</NoWarn>
+        <UserSecretsId>fd097735-4bda-4320-ad57-54ca2fea0e5d</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,7 +18,7 @@
         <ProjectReference Include="..\..\..\extensions\LlamaSharp\LlamaSharp\LlamaSharp.csproj" />
         <ProjectReference Include="..\..\..\extensions\Postgres\Postgres\Postgres.csproj" />
         <ProjectReference Include="..\..\..\extensions\Redis\Redis\Redis.csproj" />
-        <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj"/>
+        <ProjectReference Include="..\..\..\extensions\MongoDbAtlas\MongoDbAtlas\MongoDbAtlas.csproj" />
     </ItemGroup>
 
     <ItemGroup>
