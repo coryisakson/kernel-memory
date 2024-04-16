@@ -333,10 +333,19 @@ internal static class WebAPIEndpoints
 
                 log.LogTrace("Doc Id '{1}'", query.DocumentId);
 
+                if(response == null)
+                {
+                    return Results.Problem(title: "Document not found", statusCode: 404);
+                }
+
                 request.HttpContext.Response.Headers.Add(Constants.FileHeaderDocumentId, query.DocumentId);
                 request.HttpContext.Response.Headers.Add(Constants.FileHeaderVolume, response.Volume);
                 request.HttpContext.Response.Headers.Add(Constants.FileHeaderRelativePath, response.RelativePath);
                 return Results.File(await response.StreamAsync(), response.ContentType, query.FileName, response.LastWrite);
+            }
+            catch (KernelMemoryException e)
+            {
+                return Results.Problem(title: "Document download failed", detail: e.Message, statusCode: 400);
             }
             catch (Exception e)
             {
@@ -345,6 +354,7 @@ internal static class WebAPIEndpoints
         })
             .Produces<IContentFile>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .Produces<ProblemDetails>(StatusCodes.Status404NotFound)
             .Produces<ProblemDetails>(StatusCodes.Status401Unauthorized)
             .Produces<ProblemDetails>(StatusCodes.Status403Forbidden)
             .Produces<ProblemDetails>(StatusCodes.Status503ServiceUnavailable);

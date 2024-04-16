@@ -261,8 +261,8 @@ public class MemoryWebClient : IKernelMemory
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
         };
         using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
-
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpDownloadEndpoint, content, cancellationToken).ConfigureAwait(false);
+
         response.EnsureSuccessStatusCode();
 
         response.Headers.TryGetValues("content-disposition", out IEnumerable<string> contentDisposition);
@@ -275,13 +275,13 @@ public class MemoryWebClient : IKernelMemory
         ContentDispositionHeaderValue disposition = ContentDispositionHeaderValue.Parse(contentDisposition.FirstOrDefault());
         string responseFileName = disposition.FileName;
 
-        string lastModified2 = lastModified.FirstOrDefault();
+        string lastModifiedValue = lastModified.FirstOrDefault();
         StreamableContentFile result = new(
             volume.FirstOrDefault(),
             relPath.FirstOrDefault(),
             responseFileName,
-            DateTimeOffset.Parse(lastModified2),
-            response.Content.ReadAsStreamAsync,
+            DateTimeOffset.Parse(lastModifiedValue),
+            asyncStreamDelegate: response.Content.ReadAsStreamAsync,
             disposition.Size.Value,
             contentType.FirstOrDefault()
            );

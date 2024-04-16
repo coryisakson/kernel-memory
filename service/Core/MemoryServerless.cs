@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.KernelMemory.Compositions;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Diagnostics;
@@ -27,7 +28,7 @@ public class MemoryServerless : IKernelMemory
 {
     private readonly ISearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;
-    private readonly IContentStorage _contentStorage;
+    private readonly SeachAndContentStorage _verifiedContentStorage;
     private readonly string? _defaultIndexName;
 
     /// <summary>
@@ -43,12 +44,12 @@ public class MemoryServerless : IKernelMemory
     public MemoryServerless(
         InProcessPipelineOrchestrator orchestrator,
         ISearchClient searchClient,
-        IContentStorage contentStorage,
+        SeachAndContentStorage contentStorage,
         KernelMemoryConfig? config = null)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");
         this._searchClient = searchClient ?? throw new ConfigurationException("The search client is NULL");
-        this._contentStorage = contentStorage ?? throw new ConfigurationException("The storage is NULL");
+        this._verifiedContentStorage = contentStorage ?? throw new ConfigurationException("The storage is NULL");
 
         // A non-null config object is required in order to get a non-empty default index name
         config ??= new KernelMemoryConfig();
@@ -213,11 +214,12 @@ public class MemoryServerless : IKernelMemory
         }
 
         index = IndexName.CleanName(index, this._defaultIndexName);
-        return this._contentStorage.FileInfoAsync(
+
+        return this._verifiedContentStorage.FindAndExportDocumentAsync(
             index: index,
             documentId: documentId,
             fileName: fileName,
-            logErrIfNotFound: true,
+            filters: filters,
             cancellationToken: cancellationToken);
     }
 
