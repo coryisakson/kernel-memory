@@ -22,13 +22,13 @@ public class MemoryService : IKernelMemory
 {
     private readonly IPipelineOrchestrator _orchestrator;
     private readonly ISearchClient _searchClient;
-    private readonly SeachAndContentStorage _verifiedContentStorage;
+    private readonly IExportValidationService _verifiedContentStorage;
     private readonly string? _defaultIndexName;
 
     public MemoryService(
         IPipelineOrchestrator orchestrator,
         ISearchClient searchClient,
-        SeachAndContentStorage verifiedContentStorage,
+        IExportValidationService verifiedContentStorage,
         KernelMemoryConfig? config = null)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");

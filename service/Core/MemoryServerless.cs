@@ -28,7 +28,7 @@ public class MemoryServerless : IKernelMemory
 {
     private readonly ISearchClient _searchClient;
     private readonly InProcessPipelineOrchestrator _orchestrator;
-    private readonly SeachAndContentStorage _verifiedContentStorage;
+    private readonly IExportValidationService _verifiedContentStorage;
     private readonly string? _defaultIndexName;
 
     /// <summary>
@@ -44,7 +44,7 @@ public class MemoryServerless : IKernelMemory
     public MemoryServerless(
         InProcessPipelineOrchestrator orchestrator,
         ISearchClient searchClient,
-        SeachAndContentStorage contentStorage,
+        IExportValidationService contentStorage,
         KernelMemoryConfig? config = null)
     {
         this._orchestrator = orchestrator ?? throw new ConfigurationException("The orchestrator is NULL");

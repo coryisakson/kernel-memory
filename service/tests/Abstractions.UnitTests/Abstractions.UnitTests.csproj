@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
@@ -24,12 +24,13 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="Xunit.DependencyInjection"/>
-        <PackageReference Include="Xunit.DependencyInjection.Logging"/>
-        <PackageReference Include="xunit"/>
-        <PackageReference Include="xunit.abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="Moq" />
+        <PackageReference Include="Xunit.DependencyInjection" />
+        <PackageReference Include="Xunit.DependencyInjection.Logging" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.abstractions" />
         <PackageReference Include="xunit.runner.visualstudio">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,11 +38,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="Fixtures\Doc1.txt"/>
+        <None Remove="Fixtures\Doc1.txt" />
         <Content Include="Fixtures\Doc1.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <None Remove="Fixtures\Documents\Doc1.txt"/>
+        <None Remove="Fixtures\Documents\Doc1.txt" />
         <Content Include="Fixtures\Documents\Doc1.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

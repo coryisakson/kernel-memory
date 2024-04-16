@@ -6,26 +6,28 @@ using System.Threading;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Search;
 using System.Linq;
-using System.IO;
 
 namespace Microsoft.KernelMemory.Compositions;
 
-public class SeachAndContentStorage
+public class ExportValidationService : IExportValidationService
 {
     private readonly IContentStorage _contentStorage;
     private readonly ISearchClient _search;
 
-    public SeachAndContentStorage(IContentStorage storage, ISearchClient search)
+    public ExportValidationService(IContentStorage storage, ISearchClient search)
     {
         this._contentStorage = storage;
         this._search = search;
     }
 
+    // TODO: Tests for this!
+
+
     /// <inheritdoc />
     public async Task<IContentFile> FindAndExportDocumentAsync(
-        string fileName,
-        string documentId,
         string index,
+        string documentId,
+        string fileName,
         ICollection<MemoryFilter>? filters = null,
         CancellationToken cancellationToken = default)
     {

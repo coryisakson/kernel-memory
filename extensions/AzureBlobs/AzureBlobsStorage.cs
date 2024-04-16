@@ -223,6 +223,7 @@ public class AzureBlobsStorage : IContentStorage
         }
     }
 
+    /// <inheritdoc />
     public async Task<IContentFile> FileInfoAsync(
         string index,
         string documentId,
