@@ -9,9 +9,10 @@ hybrid pipelines, with support for
 **[Retrieval Augmented Generation](https://en.wikipedia.org/wiki/Prompt_engineering#Retrieval-augmented_generation)** (RAG),
 synthetic memory, prompt engineering, and custom semantic memory processing.
 
-KM includes a GPT **[Plugin](https://www.microsoft.com/en-us/microsoft-365/blog/2023/05/23/empowering-every-developer-with-plugins-for-microsoft-365-copilot/)**,
-**web clients**, a .NET library for embedded applications, and as a
-[Docker container](https://hub.docker.com/r/kernelmemory/service).
+KM is available as a **Web Service**,
+as a **[Docker container](https://hub.docker.com/r/kernelmemory/service)**,
+a **[Plugin](https://learn.microsoft.com/copilot/plugins/overview)**
+for ChatGPT/Copilot/Semantic Kernel, and as a .NET library for embedded applications.
 
 ![image](https://github.com/microsoft/kernel-memory/assets/371009/31894afa-d19e-4e9b-8d0f-cb889bf5c77f)
 
@@ -343,14 +344,17 @@ running the service locally with OpenAPI enabled.
 11. [Using custom LLMs](examples/104-dotnet-custom-LLM)
 12. [Using LLama](examples/105-dotnet-serverless-llamasharp)
 13. [Summarizing documents, using synthetic memories](examples/106-dotnet-retrieve-synthetics)
-14. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
-15. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
-16. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
-17. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
-18. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
-19. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
-20. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
-21. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
+14. [Using Semantic Kernel LLM connectors](examples/107-dotnet-SemanticKernel-TextCompletion)
+15. [Using custom content decoders](examples/108-dotnet-custom-content-decoders)
+16. [Using a custom web scraper to fetch web pages](examples/109-dotnet-custom-webscraper)
+17. [Writing and using a custom ingestion handler](examples/201-dotnet-serverless-custom-handler)
+18. [Running a single asynchronous pipeline handler as a standalone service](examples/202-dotnet-custom-handler-as-a-service)
+19. [Test project using KM package from nuget.org](examples/203-dotnet-using-core-nuget)
+20. [Integrating Memory with ASP.NET applications and controllers](examples/204-dotnet-ASP.NET-MVC-integration)
+21. [Sample code showing how to extract text from files](examples/205-dotnet-extract-text-from-docs)
+22. [.NET configuration and logging](examples/206-dotnet-configuration-and-logging)
+23. [Expanding chunks retrieving adjacent partitions](examples/207-dotnet-expanding-chunks-on-retrieval)
+24. [Using local models via LM Studio](examples/208-dotnet-lmstudio)
 
 ## Tools
 
