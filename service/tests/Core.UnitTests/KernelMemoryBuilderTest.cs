@@ -3,6 +3,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Compositions;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.MemoryStorage;
@@ -30,6 +31,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
         var myTextEmbeddingGenerator = new Mock<ITextEmbeddingGenerator>();
         var myTextGenerator = new Mock<ITextGenerator>();
         var myMemoryDb = new Mock<IMemoryDb>();
+        var myExportValidation = new Mock<IExportValidationService>();
 
         myTextEmbeddingGenerator.SetupGet(x => x.MaxTokens).Returns(int.MaxValue);
 
@@ -38,7 +40,8 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
             .WithCustomMimeTypeDetection(myMimeTypeDetection.Object)
             .WithCustomEmbeddingGenerator(myTextEmbeddingGenerator.Object)
             .WithCustomTextGenerator(myTextGenerator.Object)
-            .WithCustomMemoryDb(myMemoryDb.Object);
+            .WithCustomMemoryDb(myMemoryDb.Object)
+            .WithCustomCustomExportValidation(myExportValidation.Object);
 
         // Act
         var memory = target.Build();
@@ -60,6 +63,7 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
         var myTextEmbeddingGenerator = new Mock<ITextEmbeddingGenerator>();
         var myTextGenerator = new Mock<ITextGenerator>();
         var myMemoryDb = new Mock<IMemoryDb>();
+        var myExportValidation = new Mock<IExportValidationService>();
 
         myTextEmbeddingGenerator.SetupGet(x => x.MaxTokens).Returns(int.MaxValue);
 
@@ -69,7 +73,8 @@ public class KernelMemoryBuilderTest : BaseUnitTestCase
             .WithCustomMimeTypeDetection(myMimeTypeDetection.Object)
             .WithCustomEmbeddingGenerator(myTextEmbeddingGenerator.Object)
             .WithCustomTextGenerator(myTextGenerator.Object)
-            .WithCustomMemoryDb(myMemoryDb.Object);
+            .WithCustomMemoryDb(myMemoryDb.Object)
+            .WithCustomCustomExportValidation(myExportValidation.Object);
 
         // Act
         var memory = target.Build();

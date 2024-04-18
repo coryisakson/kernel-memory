@@ -2,6 +2,7 @@
 
 using System;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Compositions;
 using Microsoft.KernelMemory.Configuration;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.DataFormats;
@@ -173,6 +174,13 @@ public static partial class KernelMemoryBuilderExtensions
     {
         options = options ?? throw new ConfigurationException("The given options are NULL");
         builder.With<TextPartitioningOptions>(options);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomCustomExportValidation(
+    this IKernelMemoryBuilder builder, IExportValidationService service)
+    {
+        builder.AddSingleton<IExportValidationService>(service);
         return builder;
     }
 }
