@@ -20,9 +20,6 @@ public class ExportValidationService : IExportValidationService
         this._search = search;
     }
 
-    // TODO: Tests for this!
-
-
     /// <inheritdoc />
     public async Task<IContentFile> FindAndExportDocumentAsync(
         string index,

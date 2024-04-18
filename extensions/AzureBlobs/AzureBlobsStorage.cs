@@ -12,6 +12,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.Diagnostics;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.ContentStorage.AzureBlobs;
 
@@ -183,7 +184,7 @@ public class AzureBlobsStorage : IContentStorage
         string documentId,
         string fileName,
         Stream streamContent,
-        string? contentType = "application/octet-stream",
+        string? contentType = MimeTypes.Unknown,
         CancellationToken cancellationToken = default)
     {
         var directoryName = JoinPaths(index, documentId);

@@ -8,6 +8,8 @@ namespace Microsoft.KernelMemory.Pipeline;
 
 public static class MimeTypes
 {
+    public const string Unknown = "application/octet-stream";
+
     public const string PlainText = "text/plain";
 
     // Multiple values have been used over the years.

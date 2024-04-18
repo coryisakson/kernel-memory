@@ -97,7 +97,7 @@ public class SummarizationParallelHandler : IPipelineStepHandler
                         {
                             var summaryData = new BinaryData(summary);
                             var destFile = uploadedFile.GetHandlerOutputFileName(this);
-                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, "application/octet-stream", token).ConfigureAwait(false);
+                            await this._orchestrator.WriteFileAsync(pipeline, destFile, summaryData, MimeTypes.Unknown, token).ConfigureAwait(false);
 
                             lock (summaryFiles)
                             {

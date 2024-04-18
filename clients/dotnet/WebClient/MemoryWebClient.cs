@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Internals;
 using Microsoft.KernelMemory.Models;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory;
 
@@ -260,7 +261,7 @@ public class MemoryWebClient : IKernelMemory
             DocumentId = documentId,
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
         };
-        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, MimeTypes.Json);
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpDownloadEndpoint, content, cancellationToken).ConfigureAwait(false);
 
         response.EnsureSuccessStatusCode();
@@ -314,7 +315,7 @@ public class MemoryWebClient : IKernelMemory
             MinRelevance = minRelevance,
             Limit = limit,
         };
-        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, MimeTypes.Json);
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpSearchEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -346,7 +347,7 @@ public class MemoryWebClient : IKernelMemory
             Filters = (filters is { Count: > 0 }) ? filters.ToList() : new(),
             MinRelevance = minRelevance
         };
-        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+        using StringContent content = new(JsonSerializer.Serialize(request), Encoding.UTF8, MimeTypes.Json);
 
         HttpResponseMessage? response = await this._client.PostAsync(Constants.HttpAskEndpoint, content, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

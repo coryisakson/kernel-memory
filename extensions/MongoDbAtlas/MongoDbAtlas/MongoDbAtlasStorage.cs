@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.KernelMemory.ContentStorage;
+using Microsoft.KernelMemory.Pipeline;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
@@ -59,7 +60,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
         return this.EmptyDocumentDirectoryAsync(index, documentId, cancellationToken);
     }
 
-    public async Task WriteFileAsync(string index, string documentId, string fileName, Stream streamContent, string contentType = "application/octet-stream",
+    public async Task WriteFileAsync(string index, string documentId, string fileName, Stream streamContent, string contentType = MimeTypes.Unknown,
         CancellationToken cancellationToken = new CancellationToken())
     {
         // txt files are extracted text, and are stored in mongodb in the collection
@@ -74,7 +75,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 { "_id", id },
                 { "documentId", documentId },
                 { "fileName", fileName },
-                { "contentType", "text/plain" },
+                { "contentType", MimeTypes.PlainText },
                 { "content", new BsonString(await reader.ReadToEndAsync().ConfigureAwait(false)) }
             };
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
@@ -90,7 +91,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
             doc["_id"] = id;
             doc["documentId"] = documentId;
             doc["fileName"] = fileName;
-            doc["contentType"] = "application/json";
+            doc["contentType"] = MimeTypes.Json;
             doc["content"] = content;
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }

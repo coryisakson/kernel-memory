@@ -228,14 +228,14 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
     }
 
     ///<inheritdoc />
-    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, string contentType = "text/plain", CancellationToken cancellationToken = default)
+    public Task WriteTextFileAsync(DataPipeline pipeline, string fileName, string fileContent, string contentType = MimeTypes.PlainText, CancellationToken cancellationToken = default)
     {
         pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
         return this.WriteFileAsync(pipeline, fileName, new BinaryData(fileContent), contentType, cancellationToken);
     }
 
     ///<inheritdoc />
-    public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, string contentType = "application/octet-stream", CancellationToken cancellationToken = default)
+    public Task WriteFileAsync(DataPipeline pipeline, string fileName, BinaryData fileContent, string contentType = MimeTypes.Unknown, CancellationToken cancellationToken = default)
     {
         pipeline.Index = IndexName.CleanName(pipeline.Index, this._defaultIndexName);
         return this._contentStorage.WriteFileAsync(pipeline.Index, pipeline.DocumentId, fileName, fileContent.ToStream(), contentType, cancellationToken);
@@ -410,7 +410,7 @@ public abstract class BaseOrchestrator : IPipelineOrchestrator, IDisposable
                     pipeline.DocumentId,
                     Constants.PipelineStatusFilename,
                     new BinaryData(ToJson(pipeline, true)).ToStream(),
-                    "application/json",
+                    MimeTypes.Json,
                     cancellationToken)
                 .ConfigureAwait(false);
         }

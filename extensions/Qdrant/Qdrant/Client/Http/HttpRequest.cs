@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using Microsoft.KernelMemory.Pipeline;
 
 namespace Microsoft.KernelMemory.MemoryDb.Qdrant.Client.Http;
 
@@ -46,7 +47,7 @@ internal static class HttpRequest
                 : JsonSerializer.SerializeToUtf8Bytes(payload, s_jsonSerializerOptions);
 
             content = new ByteArrayContent(utf8Bytes);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
+            content.Headers.ContentType = new MediaTypeHeaderValue(MimeTypes.Json) { CharSet = "utf-8" };
         }
 
         return content;
