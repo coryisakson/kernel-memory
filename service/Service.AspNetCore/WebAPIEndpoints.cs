@@ -6,14 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.Models;
-using Microsoft.KernelMemory.WebService;
 using Microsoft.KernelMemory.Service.AspNetCore.Models;
+using System.IO;
 
 namespace Microsoft.KernelMemory.Service.AspNetCore;
 
@@ -31,7 +30,7 @@ public static class WebAPIEndpoints
         builder.AddAskEndpoint(apiPrefix, authFilter);
         builder.AddSearchEndpoint(apiPrefix, authFilter);
         builder.AddUploadStatusEndpoint(apiPrefix, authFilter);
-        apxp.UseGetDownloadEndpoint(authFilter);
+        builder.AddPostDownloadEndpoint(apiPrefix, authFilter);
 
         return builder;
     }
@@ -301,14 +300,16 @@ public static class WebAPIEndpoints
         if (authFilter != null) { route.AddEndpointFilter(authFilter); }
     }
 
-    public static void UseGetDownloadEndpoint(this IEndpointRouteBuilder app, IEndpointFilter? authFilter = null)
+    public static void AddPostDownloadEndpoint(this IEndpointRouteBuilder builder, string apiPrefix = "/", IEndpointFilter? authFilter = null)
     {
+        RouteGroupBuilder group = builder.MapGroup(apiPrefix);
+
         // File download endpoint
-        var route = app.MapPost(Constants.HttpDownloadEndpoint, async Task<IResult> (
+        var route = group.MapPost(Constants.HttpDownloadEndpoint, async Task<IResult> (
                 HttpRequest request,
                 DocumentQuery query,
                 IKernelMemory service,
-                ILogger<WebAPIEndpoint> log,
+                ILogger<KernelMemoryWebAPI> log,
                 CancellationToken cancellationToken) =>
         {
             var isValid = !(
@@ -345,7 +346,12 @@ public static class WebAPIEndpoints
                 request.HttpContext.Response.Headers.Add(Constants.FileHeaderDocumentId, query.DocumentId);
                 request.HttpContext.Response.Headers.Add(Constants.FileHeaderVolume, response.Volume);
                 request.HttpContext.Response.Headers.Add(Constants.FileHeaderRelativePath, response.RelativePath);
-                return Results.File(await response.StreamAsync(), response.ContentType, query.FileName, response.LastWrite);
+                Stream resultingFileStream = await response.StreamAsync().WaitAsync(cancellationToken).ConfigureAwait(false);
+                return Results.File(resultingFileStream, response.ContentType, query.FileName, response.LastWrite);
+            }
+            catch (ContentStorageFileNotFoundException e)
+            {
+                return Results.Problem(title: "Document not found", detail: e.Message, statusCode: 404);
             }
             catch (KernelMemoryException e)
             {

@@ -34,15 +34,16 @@ public class ExportValidationService : IExportValidationService
             SearchResult result = await this._search.SearchAsync(index: index,
                 query: string.Empty,
                 filters: filters,
-                limit: 1,
                 cancellationToken: cancellationToken).ConfigureAwait(false);
             if (result == null || result.NoResult)
             {
                 throw new KernelMemoryException("Search found no documents matching the requested filters");
             }
 
-            Citation citation = result.Results.First();
-            if (citation.DocumentId != documentId || citation.SourceName != fileName)
+            Citation citation = result.Results.FirstOrDefault(r =>
+                r.DocumentId.Equals(documentId, System.StringComparison.Ordinal) &&
+                r.SourceName.Equals(fileName, System.StringComparison.Ordinal));
+            if (citation != null && citation.DocumentId != documentId || citation.SourceName != fileName)
             {
                 throw new KernelMemoryException("Search results do not contain the requested document");
             }

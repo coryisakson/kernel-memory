@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.KernelMemory.AI;
+using Microsoft.KernelMemory.Compositions;
 using Microsoft.KernelMemory.Configuration;
+using Microsoft.KernelMemory.ContentStorage;
 using Microsoft.KernelMemory.ContentStorage.DevTools;
 using Microsoft.KernelMemory.MemoryStorage;
 using Microsoft.KernelMemory.MemoryStorage.DevTools;
@@ -110,6 +112,8 @@ internal sealed class ServiceConfiguration
         this.ConfigureTextGenerator(builder);
 
         this.ConfigureImageOCR(builder);
+
+        this.ConfigureExportValidation(builder);
 
         return builder;
     }
@@ -417,6 +421,11 @@ internal sealed class ServiceConfiguration
                 // NOOP - allow custom implementations, via WithCustomImageOCR()
                 break;
         }
+    }
+
+    private void ConfigureExportValidation(IKernelMemoryBuilder builder)
+    {
+        builder.Services.AddSingleton<IExportValidationService, ExportValidationService>();
     }
 
     /// <summary>
