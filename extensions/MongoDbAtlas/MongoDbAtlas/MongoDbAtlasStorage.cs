@@ -76,7 +76,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
                 { "documentId", documentId },
                 { "fileName", fileName },
                 { "contentType", MimeTypes.PlainText },
-                { "content", new BsonString(await reader.ReadToEndAsync().ConfigureAwait(false)) }
+                { "content", new BsonString(await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false)) }
             };
             await this.SaveDocumentAsync(index, id, doc, cancellationToken).ConfigureAwait(false);
         }
@@ -85,7 +85,7 @@ public class MongoDbAtlasStorage : MongoDbAtlasBaseStorage, IContentStorage
             //ok the file is a text embedding formatted as json, I'd like to save parsing the document.
             //saving everything in the content field not as string but as json.
             using var reader = new StreamReader(streamContent);
-            var content = await reader.ReadToEndAsync().ConfigureAwait(false);
+            var content = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
             // now deserialize the json
             var doc = BsonDocument.Parse(content);
             doc["_id"] = id;

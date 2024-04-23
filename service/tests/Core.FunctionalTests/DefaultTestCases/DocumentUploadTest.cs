@@ -6,7 +6,7 @@ using Microsoft.KernelMemory;
 using Microsoft.KernelMemory.FileSystem.DevTools;
 using NRedisStack.Search;
 
-namespace FunctionalTests.DefaultTestCases;
+namespace Microsoft.Core.FunctionalTests.DefaultTestCases;
 
 public static class DocumentUploadTest
 {

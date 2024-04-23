@@ -80,6 +80,14 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
+    public static IKernelMemoryBuilder WithCustomIngestionQueueClientFactory<T>(
+        this IKernelMemoryBuilder builder, T service) where T : QueueClientFactory
+    {
+        service = service ?? throw new ConfigurationException("The ingestion queue client factory instance is NULL");
+        builder.AddSingleton<QueueClientFactory, T>();
+        return builder;
+    }
+
     public static IKernelMemoryBuilder WithCustomStorage(
         this IKernelMemoryBuilder builder, IContentStorage service)
     {
@@ -88,11 +96,27 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
+    public static IKernelMemoryBuilder WithCustomStorage<T>(
+        this IKernelMemoryBuilder builder, T service) where T : class, IContentStorage
+    {
+        service = service ?? throw new ConfigurationException("The content storage instance is NULL");
+        builder.AddSingleton<IContentStorage, T>();
+        return builder;
+    }
+
     public static IKernelMemoryBuilder WithCustomMimeTypeDetection(
         this IKernelMemoryBuilder builder, IMimeTypeDetection service)
     {
         service = service ?? throw new ConfigurationException("The MIME type detection instance is NULL");
         builder.AddSingleton<IMimeTypeDetection>(service);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomMimeTypeDetection<T>(
+        this IKernelMemoryBuilder builder, T service) where T : class, IMimeTypeDetection
+    {
+        service = service ?? throw new ConfigurationException("The MIME type detection instance is NULL");
+        builder.AddSingleton<IMimeTypeDetection, T>();
         return builder;
     }
 
@@ -147,6 +171,15 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
+    public static IKernelMemoryBuilder WithCustomTextGenerator<T>(
+        this IKernelMemoryBuilder builder,
+        T service) where T : class, ITextGenerator
+    {
+        service = service ?? throw new ConfigurationException("The text generator instance is NULL");
+        builder.AddSingleton<ITextGenerator, T>();
+        return builder;
+    }
+
     public static IKernelMemoryBuilder WithCustomImageOcr(
         this IKernelMemoryBuilder builder,
         IOcrEngine service)
@@ -156,11 +189,28 @@ public static partial class KernelMemoryBuilderExtensions
         return builder;
     }
 
+    public static IKernelMemoryBuilder WithCustomImageOcr<T>(
+        this IKernelMemoryBuilder builder,
+        T service) where T : class, IOcrEngine
+    {
+        service = service ?? throw new ConfigurationException("The OCR engine instance is NULL");
+        builder.AddSingleton<IOcrEngine, T>();
+        return builder;
+    }
+
     public static IKernelMemoryBuilder WithCustomPromptProvider(
         this IKernelMemoryBuilder builder, IPromptProvider service)
     {
         service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
         builder.AddSingleton<IPromptProvider>(service);
+        return builder;
+    }
+
+    public static IKernelMemoryBuilder WithCustomPromptProvider<T>(
+        this IKernelMemoryBuilder builder, T service) where T : class, IPromptProvider
+    {
+        service = service ?? throw new ConfigurationException("The prompt provider instance is NULL");
+        builder.AddSingleton<IPromptProvider, T>();
         return builder;
     }
 
